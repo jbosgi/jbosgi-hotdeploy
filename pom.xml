@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+  <!-- ====================================================================== -->
+  <!--                                                                        -->
+  <!--  JBoss, the OpenSource J2EE webOS                                      -->
+  <!--                                                                        -->
+  <!--  Distributable under LGPL license.                                     -->
+  <!--  See terms of license at http://www.gnu.org.                           -->
+  <!--                                                                        -->
+  <!-- ====================================================================== -->
+
+  <!-- $Id$ -->
+  
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <name>JBossOSGi Bundles - HotDeployment</name>
+  <description>The JBossOSGi Hot Deployment Service</description>
+
+  <groupId>org.jboss.osgi.bundles</groupId>
+  <artifactId>jboss-osgi-hotdeploy</artifactId>
+  <packaging>bundle</packaging>
+
+  <version>1.0.0</version>
+  
+  <!-- Parent -->
+  <parent>
+    <groupId>org.jboss.osgi</groupId>
+    <artifactId>jboss-osgi-parent</artifactId>
+    <version>1.0.1</version>
+  </parent>
+  
+  <!-- Properties -->
+  <properties>
+    <version.jboss.osgi.common>1.0.0</version.jboss.osgi.common>
+    <version.osgi>r4v41</version.osgi>
+  </properties>
+  
+  <!-- Dependencies -->
+  <dependencies>
+  
+    <!-- Bundle dependencies -->
+    <dependency>
+      <groupId>org.jboss.osgi.bundles</groupId>
+      <artifactId>jboss-osgi-common</artifactId>
+      <version>${version.jboss.osgi.common}</version>
+      <scope>provided</scope>
+    </dependency>
+    
+    <!-- OSGi Dependencies -->
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.core</artifactId>
+      <version>${version.osgi}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.compendium</artifactId>
+      <version>${version.osgi}</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Bundle-SymbolicName>${artifactId}</Bundle-SymbolicName>
+            <Bundle-Activator>org.jboss.osgi.hotdeploy.internal.DeploymentScannerActivator</Bundle-Activator>
+            <Private-Package>org.jboss.osgi.hotdeploy.internal</Private-Package>
+            <Import-Package>
+               javax.management, 
+               org.jboss.osgi.common.log;version="1.0",
+               org.jboss.osgi.spi.service;version="1.0",
+               org.jboss.osgi.spi.util;version="1.0",
+               org.osgi.framework,
+               org.osgi.service.log,
+               org.osgi.util.tracker
+            </Import-Package>
+          </instructions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
