@@ -44,8 +44,8 @@ import org.jboss.osgi.spi.util.BundleDeploymentFactory;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
-import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.Version;
 import org.osgi.service.log.LogService;
 
 /**
@@ -180,11 +180,18 @@ public class DeploymentScannerImpl implements DeploymentScannerService
          if (currScan.contains(dep) == false)
          {
             Bundle bundle = getBundle(dep);
-            int state = bundle.getState();
-            if (state == Bundle.INSTALLED || state == Bundle.RESOLVED || state == Bundle.ACTIVE)
+            if (bundle == null)
             {
                deploymentCache.remove(dep.getLocation().toExternalForm());
-               diff.add(dep);
+            }
+            else
+            {
+               int state = bundle.getState();
+               if (state == Bundle.INSTALLED || state == Bundle.RESOLVED || state == Bundle.ACTIVE)
+               {
+                  deploymentCache.remove(dep.getLocation().toExternalForm());
+                  diff.add(dep);
+               }
             }
          }
       }
@@ -311,15 +318,15 @@ public class DeploymentScannerImpl implements DeploymentScannerService
    private Bundle getBundle(BundleDeployment dep)
    {
       String symbolicName = dep.getSymbolicName();
-      String version = dep.getVersion();
+      Version version = dep.getVersion();
 
       Bundle bundle = null;
       for (Bundle aux : context.getBundles())
       {
          if (aux.getSymbolicName().equals(symbolicName))
          {
-            String auxVersion = (String)aux.getHeaders().get(Constants.BUNDLE_VERSION);
-            if (version == null || version.equals(auxVersion))
+            Version auxVersion = aux.getVersion();
+            if (version.equals(auxVersion))
             {
                bundle = aux;
                break;
