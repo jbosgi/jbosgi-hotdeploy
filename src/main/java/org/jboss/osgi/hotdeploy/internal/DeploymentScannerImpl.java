@@ -230,14 +230,17 @@ public class DeploymentScannerImpl implements DeploymentScannerService
          logBundleDeployments("NEW diff", diff);
 
       // Deploy the bundles through the DeployerService
-      try
+      if (diff.size() > 0)
       {
-         BundleDeployment[] depArr = diff.toArray(new BundleDeployment[diff.size()]);
-         deployer.deploy(depArr);
-      }
-      catch (Exception ex)
-      {
-         log.log(LogService.LOG_ERROR, "Cannot deploy bundles", ex);
+         try
+         {
+            BundleDeployment[] depArr = diff.toArray(new BundleDeployment[diff.size()]);
+            deployer.deploy(depArr);
+         }
+         catch (Exception ex)
+         {
+            log.log(LogService.LOG_ERROR, "Cannot deploy bundles", ex);
+         }
       }
       
       return diff.size();
