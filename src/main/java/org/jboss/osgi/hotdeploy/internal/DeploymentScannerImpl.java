@@ -23,7 +23,7 @@ package org.jboss.osgi.hotdeploy.internal;
 
 //$Id$
 
-import static org.jboss.osgi.spi.Constants.OSGI_HOME;
+import static org.jboss.osgi.spi.OSGiConstants.OSGI_HOME;
 
 import java.io.File;
 import java.net.MalformedURLException;
