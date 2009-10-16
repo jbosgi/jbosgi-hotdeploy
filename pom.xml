@@ -40,11 +40,17 @@
   <!-- Properties -->
   <properties>
     <version.jboss.osgi.common>1.0.2</version.jboss.osgi.common>
+    <version.jboss.osgi.spi>1.0.3-SNAPSHOT</version.jboss.osgi.spi>
     <version.osgi>r4v42</version.osgi>
   </properties>
   
   <!-- Dependencies -->
   <dependencies>
+    <dependency>
+      <groupId>org.jboss.osgi</groupId>
+      <artifactId>jboss-osgi-spi</artifactId>
+      <version>${version.jboss.osgi.spi}</version>
+    </dependency>
   
     <!-- Bundle dependencies -->
     <dependency>
@@ -82,12 +88,13 @@
             <Private-Package>org.jboss.osgi.hotdeploy.internal</Private-Package>
             <Import-Package>
                javax.management, 
-               org.jboss.osgi.common.log;version="1.0",
-               org.jboss.osgi.spi.service;version="1.0",
-               org.jboss.osgi.spi.util;version="1.0",
+               org.jboss.osgi.common.log;version=1.0,
+               org.jboss.osgi.spi.service;version=1.0,
+               org.jboss.osgi.spi.util;version=1.0,
                org.osgi.framework,
                org.osgi.service.log,
-               org.osgi.util.tracker
+               org.osgi.util.tracker,
+               org.slf4j;version=1.5,
             </Import-Package>
           </instructions>
         </configuration>

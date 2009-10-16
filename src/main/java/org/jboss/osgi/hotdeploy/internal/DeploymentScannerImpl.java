@@ -31,12 +31,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.jboss.osgi.common.log.LogServiceTracker;
 import org.jboss.osgi.spi.service.DeployerService;
 import org.jboss.osgi.spi.service.DeploymentScannerService;
 import org.jboss.osgi.spi.util.BundleDeployment;
@@ -46,7 +43,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
-import org.osgi.service.log.LogService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The DeploymentScanner service
@@ -56,24 +54,22 @@ import org.osgi.service.log.LogService;
  */
 public class DeploymentScannerImpl implements DeploymentScannerService
 {
-   private LogServiceTracker log;
+   private Logger log = LoggerFactory.getLogger(DeploymentScannerImpl.class);
    private BundleContext context;
 
    private long scanInterval;
    private File scanLocation;
    private long scanCount;
+   private long beforeStart;
    private long lastChange;
 
    private DeployerService deployer;
    private ScannerThread scannerThread;
    private List<BundleDeployment> lastScan = new ArrayList<BundleDeployment>();
-   private Set<ScanListener> listeners = new LinkedHashSet<ScanListener>();
    private Map<String, BundleDeployment> deploymentCache = new HashMap<String, BundleDeployment>();
-   private boolean traceBundles = false;
 
    public DeploymentScannerImpl(BundleContext context)
    {
-      this.log = new LogServiceTracker(context);
       this.context = context;
 
       // Get the DeployerService
@@ -110,7 +106,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
       if (scandir.startsWith(osgiHome))
          scandir = "..." + scandir.substring(osgiHome.length());
       
-      log.log(LogService.LOG_INFO, "Start DeploymentScanner: [scandir=" + scandir + ",interval=" + scanInterval + "ms]");
+      log.info("Start DeploymentScanner: [scandir=" + scandir + ",interval=" + scanInterval + "ms]");
       scannerThread = new ScannerThread(context, this);
       lastChange = System.currentTimeMillis();
       scannerThread.start();
@@ -120,33 +116,17 @@ public class DeploymentScannerImpl implements DeploymentScannerService
    {
       if (scannerThread != null)
       {
-         log.log(LogService.LOG_INFO, "Stop DeploymentScanner");
+         log.info("Stop DeploymentScanner");
          scannerThread.stopScan();
          scannerThread = null;
       }
    }
 
-   public void addScanListener(ScanListener listener)
-   {
-      listeners.add(listener);
-   }
-
-   public void removeScanListener(ScanListener listener)
-   {
-      listeners.remove(listener);
-   }
-
    public void scan()
    {
-      // Use a copy so listeners can remove themselves from within the callback
-      List<ScanListener> scanListeners = new ArrayList<ScanListener>(listeners);
-      for (ScanListener listener : scanListeners)
-         listener.beforeScan(this);
-      
       List<BundleDeployment> currScan = Arrays.asList(getBundleDeployments());
 
-      if (traceBundles)
-         logBundleDeployments("Current Scan", currScan);
+      logBundleDeployments("Current Scan", currScan);
 
       int oldDiff = processOldDeployments(currScan);
       int newDiff = processNewDeployments(currScan);
@@ -157,16 +137,20 @@ public class DeploymentScannerImpl implements DeploymentScannerService
       lastScan = currScan;
       scanCount++;
 
-      for (ScanListener listener : scanListeners)
-         listener.afterScan(this);
+      float diff = (lastChange - beforeStart) / 1000f;
+      if (scanCount == 1)
+         log.info("JBossOSGi Runtime started in " + diff + "sec");
    }
 
    private void logBundleDeployments(String message, List<BundleDeployment> bundleDeps)
    {
-      System.out.println(message);
-      for (BundleDeployment dep : bundleDeps)
+      if (log.isTraceEnabled())
       {
-         System.out.println("   " + dep);
+         log.trace(message);
+         for (BundleDeployment dep : bundleDeps)
+         {
+            log.trace("   " + dep);
+         }
       }
    }
 
@@ -196,8 +180,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
          }
       }
 
-      if (traceBundles)
-         logBundleDeployments("OLD diff", diff);
+      logBundleDeployments("OLD diff", diff);
       
       // Undeploy the bundles through the DeployerService
       try
@@ -207,7 +190,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
       }
       catch (Exception ex)
       {
-         log.log(LogService.LOG_ERROR, "Cannot undeploy bundles", ex);
+         log.error("Cannot undeploy bundles", ex);
       }
       
       return diff.size();
@@ -226,8 +209,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
          }
       }
 
-      if (traceBundles)
-         logBundleDeployments("NEW diff", diff);
+      logBundleDeployments("NEW diff", diff);
 
       // Deploy the bundles through the DeployerService
       if (diff.size() > 0)
@@ -239,7 +221,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
          }
          catch (Exception ex)
          {
-            log.log(LogService.LOG_ERROR, "Cannot deploy bundles", ex);
+            log.error("Cannot deploy bundles", ex);
          }
       }
       
@@ -252,7 +234,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
       
       File[] listFiles = scanLocation.listFiles();
       if (listFiles == null)
-         log.log(LogService.LOG_WARNING, "Cannot list files in: " + scanLocation);
+         log.warn("Cannot list files in: " + scanLocation);
          
       if (listFiles != null)
       {
@@ -272,7 +254,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
                }
                catch (BundleException ex)
                {
-                  log.log(LogService.LOG_WARNING, "Cannot obtain bundle deployment for: " + file);
+                  log.warn("Cannot obtain bundle deployment for: " + file);
                }
             }
             bundles.add(dep);
@@ -286,6 +268,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
    private void initScanner(BundleContext context)
    {
       scanInterval = 2000;
+      beforeStart = System.currentTimeMillis();
 
       String interval = context.getProperty(PROPERTY_SCAN_INTERVAL);
       if (interval != null)
