@@ -34,10 +34,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.osgi.deployment.BundleDeployment;
-import org.jboss.osgi.deployment.BundleDeploymentFactory;
-import org.jboss.osgi.deployment.DeployerService;
+import org.jboss.osgi.deployment.Deployment;
 import org.jboss.osgi.deployment.DeploymentScannerService;
+import org.jboss.osgi.deployment.DeploymentService;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -63,18 +62,18 @@ public class DeploymentScannerImpl implements DeploymentScannerService
    private long beforeStart;
    private long lastChange;
 
-   private DeployerService deployer;
+   private DeploymentService deployer;
    private ScannerThread scannerThread;
-   private List<BundleDeployment> lastScan = new ArrayList<BundleDeployment>();
-   private Map<String, BundleDeployment> deploymentCache = new HashMap<String, BundleDeployment>();
+   private List<Deployment> lastScan = new ArrayList<Deployment>();
+   private Map<String, Deployment> deploymentCache = new HashMap<String, Deployment>();
 
    public DeploymentScannerImpl(BundleContext context)
    {
       this.context = context;
 
       // Get the DeployerService
-      ServiceReference sref = context.getServiceReference(DeployerService.class.getName());
-      deployer = (DeployerService)context.getService(sref);
+      ServiceReference sref = context.getServiceReference(DeploymentService.class.getName());
+      deployer = (DeploymentService)context.getService(sref);
 
       initScanner(context);
    }
@@ -124,7 +123,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
 
    public void scan()
    {
-      List<BundleDeployment> currScan = Arrays.asList(getBundleDeployments());
+      List<Deployment> currScan = Arrays.asList(getBundleDeployments());
 
       logBundleDeployments("Current Scan", currScan);
 
@@ -142,24 +141,24 @@ public class DeploymentScannerImpl implements DeploymentScannerService
          log.info("JBossOSGi Runtime started in " + diff + "sec");
    }
 
-   private void logBundleDeployments(String message, List<BundleDeployment> bundleDeps)
+   private void logBundleDeployments(String message, List<Deployment> bundleDeps)
    {
       if (log.isTraceEnabled())
       {
          log.trace(message);
-         for (BundleDeployment dep : bundleDeps)
+         for (Deployment dep : bundleDeps)
          {
             log.trace("   " + dep);
          }
       }
    }
 
-   private int processOldDeployments(List<BundleDeployment> currScan)
+   private int processOldDeployments(List<Deployment> currScan)
    {
-      List<BundleDeployment> diff = new ArrayList<BundleDeployment>();
+      List<Deployment> diff = new ArrayList<Deployment>();
 
       // Detect OLD bundles that are not in the current scan  
-      for (BundleDeployment dep : lastScan)
+      for (Deployment dep : lastScan)
       {
          if (currScan.contains(dep) == false)
          {
@@ -185,7 +184,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
       // Undeploy the bundles through the DeployerService
       try
       {
-         BundleDeployment[] depArr = diff.toArray(new BundleDeployment[diff.size()]);
+         Deployment[] depArr = diff.toArray(new Deployment[diff.size()]);
          deployer.undeploy(depArr);
       }
       catch (Exception ex)
@@ -196,12 +195,12 @@ public class DeploymentScannerImpl implements DeploymentScannerService
       return diff.size();
    }
 
-   private int processNewDeployments(List<BundleDeployment> currScan)
+   private int processNewDeployments(List<Deployment> currScan)
    {
-      List<BundleDeployment> diff = new ArrayList<BundleDeployment>();
+      List<Deployment> diff = new ArrayList<Deployment>();
 
       // Detect NEW bundles that are not in the last scan  
-      for (BundleDeployment dep : currScan)
+      for (Deployment dep : currScan)
       {
          if (lastScan.contains(dep) == false && getBundle(dep) == null)
          {
@@ -216,7 +215,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
       {
          try
          {
-            BundleDeployment[] depArr = diff.toArray(new BundleDeployment[diff.size()]);
+            Deployment[] depArr = diff.toArray(new Deployment[diff.size()]);
             deployer.deploy(depArr);
          }
          catch (Exception ex)
@@ -228,9 +227,9 @@ public class DeploymentScannerImpl implements DeploymentScannerService
       return diff.size();
    }
 
-   public BundleDeployment[] getBundleDeployments()
+   public Deployment[] getBundleDeployments()
    {
-      List<BundleDeployment> bundles = new ArrayList<BundleDeployment>();
+      List<Deployment> bundles = new ArrayList<Deployment>();
       
       File[] listFiles = scanLocation.listFiles();
       if (listFiles == null)
@@ -241,13 +240,13 @@ public class DeploymentScannerImpl implements DeploymentScannerService
          for (File file : listFiles)
          {
             URL bundleURL = toURL(file);
-            BundleDeployment dep = deploymentCache.get(bundleURL.toExternalForm());
+            Deployment dep = deploymentCache.get(bundleURL.toExternalForm());
             if (dep == null)
             {
                try
                {
                   // hot-deploy bundles are started automatically
-                  dep = BundleDeploymentFactory.createBundleDeployment(bundleURL);
+                  dep = deployer.createDeployment(bundleURL.toExternalForm());
                   dep.setAutoStart(true);
                   
                   deploymentCache.put(bundleURL.toExternalForm(), dep);
@@ -261,7 +260,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
          }
       }
       
-      BundleDeployment[] arr = new BundleDeployment[bundles.size()];
+      Deployment[] arr = new Deployment[bundles.size()];
       return bundles.toArray(arr);
    }
    
@@ -301,7 +300,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
       scanLocation = scanFile;
    }
 
-   private Bundle getBundle(BundleDeployment dep)
+   private Bundle getBundle(Deployment dep)
    {
       String symbolicName = dep.getSymbolicName();
       Version version = Version.parseVersion(dep.getVersion());
