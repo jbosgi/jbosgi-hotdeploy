@@ -40,6 +40,7 @@
   <!-- Properties -->
   <properties>
     <version.jboss.osgi.common>1.0.3-SNAPSHOT</version.jboss.osgi.common>
+    <version.jboss.osgi.deployment>1.0.0-SNAPSHOT</version.jboss.osgi.deployment>
     <version.jboss.osgi.spi>1.0.3-SNAPSHOT</version.jboss.osgi.spi>
     <version.osgi>r4v42</version.osgi>
   </properties>
@@ -57,6 +58,12 @@
       <groupId>org.jboss.osgi.bundles</groupId>
       <artifactId>jboss-osgi-common</artifactId>
       <version>${version.jboss.osgi.common}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.osgi.bundles</groupId>
+      <artifactId>jboss-osgi-deployment</artifactId>
+      <version>${version.jboss.osgi.deployment}</version>
       <scope>provided</scope>
     </dependency>
     
@@ -89,6 +96,7 @@
             <Import-Package>
                javax.management, 
                org.jboss.osgi.common.log;version=1.0,
+               org.jboss.osgi.deployment;version=1.0,
                org.jboss.osgi.spi.service;version=1.0,
                org.jboss.osgi.spi.util;version=1.0,
                org.osgi.framework,

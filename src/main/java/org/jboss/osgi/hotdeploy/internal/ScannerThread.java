@@ -24,7 +24,7 @@ package org.jboss.osgi.hotdeploy.internal;
 //$Id$
 
 import org.jboss.osgi.common.log.LogServiceTracker;
-import org.jboss.osgi.spi.service.DeploymentScannerService;
+import org.jboss.osgi.deployment.DeploymentScannerService;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 

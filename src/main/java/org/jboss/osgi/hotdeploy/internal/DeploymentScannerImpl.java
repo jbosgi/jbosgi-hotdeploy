@@ -34,10 +34,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.osgi.spi.service.DeployerService;
-import org.jboss.osgi.spi.service.DeploymentScannerService;
-import org.jboss.osgi.spi.util.BundleDeployment;
-import org.jboss.osgi.spi.util.BundleDeploymentFactory;
+import org.jboss.osgi.deployment.BundleDeployment;
+import org.jboss.osgi.deployment.BundleDeploymentFactory;
+import org.jboss.osgi.deployment.DeployerService;
+import org.jboss.osgi.deployment.DeploymentScannerService;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
