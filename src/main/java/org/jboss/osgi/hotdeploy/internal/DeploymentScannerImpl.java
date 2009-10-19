@@ -36,7 +36,7 @@ import java.util.Map;
 
 import org.jboss.osgi.deployment.Deployment;
 import org.jboss.osgi.deployment.DeploymentScannerService;
-import org.jboss.osgi.deployment.DeploymentService;
+import org.jboss.osgi.deployment.DeployerService;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -62,7 +62,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
    private long beforeStart;
    private long lastChange;
 
-   private DeploymentService deployer;
+   private DeployerService deployer;
    private ScannerThread scannerThread;
    private List<Deployment> lastScan = new ArrayList<Deployment>();
    private Map<String, Deployment> deploymentCache = new HashMap<String, Deployment>();
@@ -72,8 +72,8 @@ public class DeploymentScannerImpl implements DeploymentScannerService
       this.context = context;
 
       // Get the DeployerService
-      ServiceReference sref = context.getServiceReference(DeploymentService.class.getName());
-      deployer = (DeploymentService)context.getService(sref);
+      ServiceReference sref = context.getServiceReference(DeployerService.class.getName());
+      deployer = (DeployerService)context.getService(sref);
 
       initScanner(context);
    }
