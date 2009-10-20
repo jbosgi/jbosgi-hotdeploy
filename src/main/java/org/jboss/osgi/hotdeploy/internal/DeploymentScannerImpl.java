@@ -246,7 +246,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
                try
                {
                   // hot-deploy bundles are started automatically
-                  dep = deployer.createDeployment(bundleURL.toExternalForm());
+                  dep = deployer.createDeployment(bundleURL);
                   dep.setAutoStart(true);
                   
                   deploymentCache.put(bundleURL.toExternalForm(), dep);
