@@ -182,14 +182,17 @@ public class DeploymentScannerImpl implements DeploymentScannerService
       logBundleDeployments("OLD diff", diff);
       
       // Undeploy the bundles through the DeployerService
-      try
+      if (diff.size() > 0)
       {
-         Deployment[] depArr = diff.toArray(new Deployment[diff.size()]);
-         deployer.undeploy(depArr);
-      }
-      catch (Exception ex)
-      {
-         log.error("Cannot undeploy bundles", ex);
+         try
+         {
+            Deployment[] depArr = diff.toArray(new Deployment[diff.size()]);
+            deployer.undeploy(depArr);
+         }
+         catch (Exception ex)
+         {
+            log.error("Cannot undeploy bundles", ex);
+         }
       }
       
       return diff.size();
