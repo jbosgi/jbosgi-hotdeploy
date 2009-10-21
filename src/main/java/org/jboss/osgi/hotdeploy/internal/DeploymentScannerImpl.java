@@ -39,7 +39,6 @@ import org.jboss.osgi.deployment.deployer.DeployerService;
 import org.jboss.osgi.deployment.scanner.DeploymentScannerService;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
 import org.slf4j.Logger;
@@ -104,7 +103,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
       String scandir = scanLocation.getAbsolutePath();
       if (scandir.startsWith(osgiHome))
          scandir = "..." + scandir.substring(osgiHome.length());
-      
+
       log.info("Start DeploymentScanner: [scandir=" + scandir + ",interval=" + scanInterval + "ms]");
       scannerThread = new ScannerThread(context, this);
       lastChange = System.currentTimeMillis();
@@ -132,7 +131,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
 
       if (oldDiff + newDiff > 0)
          lastChange = System.currentTimeMillis();
-      
+
       lastScan = currScan;
       scanCount++;
 
@@ -180,7 +179,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
       }
 
       logBundleDeployments("OLD diff", diff);
-      
+
       // Undeploy the bundles through the DeployerService
       if (diff.size() > 0)
       {
@@ -194,7 +193,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
             log.error("Cannot undeploy bundles", ex);
          }
       }
-      
+
       return diff.size();
    }
 
@@ -226,18 +225,18 @@ public class DeploymentScannerImpl implements DeploymentScannerService
             log.error("Cannot deploy bundles", ex);
          }
       }
-      
+
       return diff.size();
    }
 
    public Deployment[] getBundleDeployments()
    {
       List<Deployment> bundles = new ArrayList<Deployment>();
-      
+
       File[] listFiles = scanLocation.listFiles();
       if (listFiles == null)
          log.warn("Cannot list files in: " + scanLocation);
-         
+
       if (listFiles != null)
       {
          for (File file : listFiles)
@@ -246,27 +245,20 @@ public class DeploymentScannerImpl implements DeploymentScannerService
             Deployment dep = deploymentCache.get(bundleURL.toExternalForm());
             if (dep == null)
             {
-               try
-               {
-                  // hot-deploy bundles are started automatically
-                  dep = deployer.createDeployment(bundleURL);
-                  dep.setAutoStart(true);
-                  
-                  deploymentCache.put(bundleURL.toExternalForm(), dep);
-               }
-               catch (BundleException ex)
-               {
-                  log.warn("Cannot obtain bundle deployment for: " + file);
-               }
+               // hot-deploy bundles are started automatically
+               dep = deployer.createDeployment(bundleURL);
+               dep.setAutoStart(true);
+
+               deploymentCache.put(bundleURL.toExternalForm(), dep);
             }
             bundles.add(dep);
          }
       }
-      
+
       Deployment[] arr = new Deployment[bundles.size()];
       return bundles.toArray(arr);
    }
-   
+
    private void initScanner(BundleContext context)
    {
       scanInterval = 2000;
@@ -323,7 +315,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
       }
       return bundle;
    }
-   
+
    private URL toURL(File file)
    {
       try
