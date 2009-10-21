@@ -95,9 +95,9 @@
             <Import-Package>
                javax.management, 
                org.jboss.osgi.common.log;version=1.0,
-               org.jboss.osgi.deployment.common;version=1.0,
-               org.jboss.osgi.deployment.deployer;version=1.0,
-               org.jboss.osgi.deployment.scanner;version=1.0,
+               org.jboss.osgi.deployment.common,
+               org.jboss.osgi.deployment.deployer,
+               org.jboss.osgi.deployment.scanner,
                org.jboss.osgi.spi.service;version=1.0,
                org.jboss.osgi.spi.util;version=1.0,
                org.osgi.framework,
