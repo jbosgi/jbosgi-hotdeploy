@@ -40,7 +40,7 @@
   <!-- Properties -->
   <properties>
     <version.jboss.osgi.common>1.0.3-SNAPSHOT</version.jboss.osgi.common>
-    <version.jboss.osgi.deployment>1.0.0-SNAPSHOT</version.jboss.osgi.deployment>
+    <version.jboss.osgi.deployment>0.0.1-SNAPSHOT</version.jboss.osgi.deployment>
     <version.jboss.osgi.spi>1.0.3-SNAPSHOT</version.jboss.osgi.spi>
     <version.osgi>4.2.0</version.osgi>
   </properties>
@@ -52,18 +52,17 @@
       <artifactId>jboss-osgi-spi</artifactId>
       <version>${version.jboss.osgi.spi}</version>
     </dependency>
+    <dependency>
+      <groupId>org.jboss.osgi.runtime</groupId>
+      <artifactId>jboss-osgi-deployment</artifactId>
+      <version>${version.jboss.osgi.deployment}</version>
+    </dependency>
   
     <!-- Bundle dependencies -->
     <dependency>
       <groupId>org.jboss.osgi.bundles</groupId>
       <artifactId>jboss-osgi-common</artifactId>
       <version>${version.jboss.osgi.common}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.osgi.bundles</groupId>
-      <artifactId>jboss-osgi-deployment</artifactId>
-      <version>${version.jboss.osgi.deployment}</version>
       <scope>provided</scope>
     </dependency>
     
