@@ -91,13 +91,15 @@
           <instructions>
             <Bundle-SymbolicName>${artifactId}</Bundle-SymbolicName>
             <Bundle-Activator>org.jboss.osgi.hotdeploy.internal.DeploymentScannerActivator</Bundle-Activator>
+            <Export-Package>
+              org.jboss.osgi.hotdeploy;version=${version}
+            </Export-Package>
             <Private-Package>org.jboss.osgi.hotdeploy.internal</Private-Package>
             <Import-Package>
                javax.management, 
                org.jboss.osgi.common.log;version=1.0,
                org.jboss.osgi.deployment.common,
                org.jboss.osgi.deployment.deployer,
-               org.jboss.osgi.deployment.scanner,
                org.jboss.osgi.spi.service;version=1.0,
                org.jboss.osgi.spi.util;version=1.0,
                org.osgi.framework,

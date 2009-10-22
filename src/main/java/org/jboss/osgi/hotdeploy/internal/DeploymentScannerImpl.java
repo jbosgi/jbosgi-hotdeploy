@@ -36,7 +36,7 @@ import java.util.Map;
 
 import org.jboss.osgi.deployment.common.Deployment;
 import org.jboss.osgi.deployment.deployer.DeployerService;
-import org.jboss.osgi.deployment.scanner.DeploymentScannerService;
+import org.jboss.osgi.hotdeploy.DeploymentScannerService;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -72,6 +72,9 @@ public class DeploymentScannerImpl implements DeploymentScannerService
 
       // Get the DeployerService
       ServiceReference sref = context.getServiceReference(DeployerService.class.getName());
+      if (sref == null)
+         throw new IllegalStateException("Cannot obtain deployer service");
+      
       deployer = (DeployerService)context.getService(sref);
 
       initScanner(context);
