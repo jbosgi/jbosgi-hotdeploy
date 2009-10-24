@@ -34,8 +34,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.osgi.deployment.common.Deployment;
 import org.jboss.osgi.deployment.deployer.DeployerService;
+import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.hotdeploy.DeploymentScannerService;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;

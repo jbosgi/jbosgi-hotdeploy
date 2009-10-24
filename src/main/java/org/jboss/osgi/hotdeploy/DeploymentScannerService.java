@@ -25,7 +25,7 @@ package org.jboss.osgi.hotdeploy;
 
 import java.net.URL;
 
-import org.jboss.osgi.deployment.common.Deployment;
+import org.jboss.osgi.deployment.deployer.Deployment;
 
 
 /**
