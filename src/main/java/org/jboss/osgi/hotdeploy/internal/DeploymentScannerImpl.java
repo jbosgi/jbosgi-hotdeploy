@@ -39,6 +39,7 @@ import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.hotdeploy.DeploymentScannerService;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
 import org.slf4j.Logger;
@@ -167,14 +168,14 @@ public class DeploymentScannerImpl implements DeploymentScannerService
             Bundle bundle = getBundle(dep);
             if (bundle == null)
             {
-               deploymentCache.remove(dep.getLocation().toExternalForm());
+               deploymentCache.remove(dep.getLocation());
             }
             else
             {
                int state = bundle.getState();
                if (state == Bundle.INSTALLED || state == Bundle.RESOLVED || state == Bundle.ACTIVE)
                {
-                  deploymentCache.remove(dep.getLocation().toExternalForm());
+                  deploymentCache.remove(dep.getLocation());
                   diff.add(dep);
                }
             }
@@ -248,10 +249,17 @@ public class DeploymentScannerImpl implements DeploymentScannerService
             Deployment dep = deploymentCache.get(bundleURL.toExternalForm());
             if (dep == null)
             {
-               // hot-deploy bundles are started automatically
-               dep = deployer.createDeployment(bundleURL);
-               dep.setAutoStart(true);
-
+               try
+               {
+                  // hot-deploy bundles are started automatically
+                  dep = deployer.createDeployment(bundleURL);
+                  dep.setAutoStart(true);
+               }
+               catch (BundleException ex)
+               {
+                  log.error("Cannot create deployment from: " + bundleURL, ex);
+                  continue;
+               }
                deploymentCache.put(bundleURL.toExternalForm(), dep);
             }
             bundles.add(dep);
