@@ -27,7 +27,7 @@
   <parent>
     <groupId>org.jboss.osgi</groupId>
     <artifactId>jboss-osgi-parent</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.5-SNAPSHOT</version>
   </parent>
   
   <!-- Subversion -->
@@ -40,8 +40,8 @@
   <!-- Properties -->
   <properties>
     <version.jboss.osgi.common>1.0.3</version.jboss.osgi.common>
-    <version.jboss.osgi.deployment>1.0.1</version.jboss.osgi.deployment>
-    <version.jboss.osgi.spi>1.0.4</version.jboss.osgi.spi>
+    <version.jboss.osgi.deployment>1.0.2-SNAPSHOT</version.jboss.osgi.deployment>
+    <version.jboss.osgi.spi>1.0.5-SNAPSHOT</version.jboss.osgi.spi>
     <version.osgi>4.2.0</version.osgi>
   </properties>
   
@@ -97,14 +97,14 @@
             <Private-Package>org.jboss.osgi.hotdeploy.internal</Private-Package>
             <Import-Package>
                javax.management, 
-               org.jboss.osgi.common.log;version=1.0,
-               org.jboss.osgi.deployment.deployer,
-               org.jboss.osgi.spi.service;version=1.0,
-               org.jboss.osgi.spi.util;version=1.0,
+               org.jboss.logging;version="[2.1,2.2)",
+               org.jboss.osgi.common.log;version="[1.0,1.1)",
+               org.jboss.osgi.deployment.deployer;version="[1.0,1.1)",
+               org.jboss.osgi.spi.service;version="[1.0,1.1)",
+               org.jboss.osgi.spi.util;version="[1.0,1.1)",
                org.osgi.framework,
                org.osgi.service.log,
                org.osgi.util.tracker,
-               org.slf4j;version=1.5,
             </Import-Package>
           </instructions>
         </configuration>

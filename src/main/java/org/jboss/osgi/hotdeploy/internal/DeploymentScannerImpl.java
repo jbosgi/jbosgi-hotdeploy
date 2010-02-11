@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.logging.Logger;
 import org.jboss.osgi.deployment.deployer.DeployerService;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.hotdeploy.DeploymentScannerService;
@@ -42,8 +43,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The DeploymentScanner service
@@ -53,7 +52,9 @@ import org.slf4j.LoggerFactory;
  */
 public class DeploymentScannerImpl implements DeploymentScannerService
 {
-   private Logger log = LoggerFactory.getLogger(DeploymentScannerImpl.class);
+   // Provide logging
+   private static final Logger log = Logger.getLogger(DeploymentScannerImpl.class);
+   
    private BundleContext context;
 
    private long scanInterval;
