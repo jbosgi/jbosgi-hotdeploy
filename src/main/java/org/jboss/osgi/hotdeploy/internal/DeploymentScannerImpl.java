@@ -332,7 +332,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
    {
       try
       {
-         return file.toURL();
+         return file.toURI().toURL();
       }
       catch (MalformedURLException ex)
       {
