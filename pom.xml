@@ -53,7 +53,7 @@
       <version>${version.jboss.osgi.spi}</version>
     </dependency>
     <dependency>
-      <groupId>org.jboss.osgi.runtime</groupId>
+      <groupId>org.jboss.osgi.deployment</groupId>
       <artifactId>jboss-osgi-deployment</artifactId>
       <version>${version.jboss.osgi.deployment}</version>
     </dependency>
