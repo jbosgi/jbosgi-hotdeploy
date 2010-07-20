@@ -37,7 +37,9 @@ import java.util.Map;
 import org.jboss.logging.Logger;
 import org.jboss.osgi.deployment.deployer.DeployerService;
 import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.osgi.deployment.deployer.DeploymentFactory;
 import org.jboss.osgi.hotdeploy.DeploymentScannerService;
+import org.jboss.osgi.spi.util.BundleInfo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -253,7 +255,8 @@ public class DeploymentScannerImpl implements DeploymentScannerService
                try
                {
                   // hot-deploy bundles are started automatically
-                  dep = deployer.createDeployment(bundleURL);
+                  BundleInfo info = BundleInfo.createBundleInfo(bundleURL);
+                  dep = DeploymentFactory.createDeployment(info);
                   dep.setAutoStart(true);
                }
                catch (BundleException ex)

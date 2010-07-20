@@ -14,7 +14,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <name>JBossOSGi Bundles - HotDeployment</name>
+  <name>JBossOSGi Hot Deployment</name>
   <description>The JBossOSGi Hot Deployment Service</description>
 
   <groupId>org.jboss.osgi.bundles</groupId>
@@ -27,21 +27,21 @@
   <parent>
     <groupId>org.jboss.osgi</groupId>
     <artifactId>jboss-osgi-parent</artifactId>
-    <version>1.0.5</version>
+    <version>1.0.7-SNAPSHOT</version>
   </parent>
   
-  <!-- Subversion -->
+  <!-- Source Control -->
   <scm>
-    <connection>scm:svn:http://anonsvn.jboss.org/repos/jbossas/projects/jboss-osgi/projects/bundles/hotdeploy/trunk</connection>
-    <developerConnection>scm:svn:https://svn.jboss.org/repos/jbossas/projects/jboss-osgi/projects/bundles/hotdeploy/trunk</developerConnection>
-    <url>http://fisheye.jboss.com/qsearch/JBossOSGi</url>
+    <connection>scm:git:git://github.com/jbosgi/jbosgi-hotdeploy.git</connection>
+    <developerConnection>scm:git:git@github.com:jbosgi/jbosgi-hotdeploy.git</developerConnection>
+    <url>http://github.com/jbosgi/jbosgi-hotdeploy</url>
   </scm>
   
   <!-- Properties -->
   <properties>
     <version.jboss.osgi.common>1.0.4</version.jboss.osgi.common>
-    <version.jboss.osgi.deployment>1.0.2</version.jboss.osgi.deployment>
-    <version.jboss.osgi.spi>1.0.5</version.jboss.osgi.spi>
+    <version.jboss.osgi.deployment>1.0.3-SNAPSHOT</version.jboss.osgi.deployment>
+    <version.jboss.osgi.spi>1.0.10-SNAPSHOT</version.jboss.osgi.spi>
     <version.osgi>4.2.0</version.osgi>
   </properties>
   
@@ -89,10 +89,10 @@
         <extensions>true</extensions>
         <configuration>
           <instructions>
-            <Bundle-SymbolicName>${artifactId}</Bundle-SymbolicName>
+            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
             <Bundle-Activator>org.jboss.osgi.hotdeploy.internal.DeploymentScannerActivator</Bundle-Activator>
             <Export-Package>
-              org.jboss.osgi.hotdeploy;version=${version}
+              org.jboss.osgi.hotdeploy;version=${project.version}
             </Export-Package>
             <Private-Package>org.jboss.osgi.hotdeploy.internal</Private-Package>
             <Import-Package>
