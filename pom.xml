@@ -16,8 +16,8 @@
   <name>JBossOSGi Hot Deployment</name>
   <description>The JBossOSGi Hot Deployment Service</description>
 
-  <groupId>org.jboss.osgi.bundles</groupId>
-  <artifactId>jboss-osgi-hotdeploy</artifactId>
+  <groupId>org.jboss.osgi.hotdeploy</groupId>
+  <artifactId>jbosgi-hotdeploy</artifactId>
   <packaging>bundle</packaging>
 
   <version>1.0.7-SNAPSHOT</version>
