@@ -40,6 +40,8 @@ import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
 import org.jboss.osgi.hotdeploy.DeploymentScannerService;
 import org.jboss.osgi.spi.util.BundleInfo;
+import org.jboss.osgi.spi.util.StringPropertyReplacer;
+import org.jboss.osgi.spi.util.SysPropertyActions;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -48,7 +50,7 @@ import org.osgi.framework.Version;
 
 /**
  * The DeploymentScanner service
- * 
+ *
  * @author thomas.diesler@jboss.com
  * @since 27-May-2009
  */
@@ -56,7 +58,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
 {
    // Provide logging
    private static final Logger log = Logger.getLogger(DeploymentScannerImpl.class);
-   
+
    private BundleContext context;
 
    private long scanInterval;
@@ -78,7 +80,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
       ServiceReference sref = context.getServiceReference(DeployerService.class.getName());
       if (sref == null)
          throw new IllegalStateException("Cannot obtain deployer service");
-      
+
       deployer = (DeployerService)context.getService(sref);
 
       initScanner(context);
@@ -106,9 +108,9 @@ public class DeploymentScannerImpl implements DeploymentScannerService
 
    public void start()
    {
-      String osgiHome = System.getProperty(OSGI_HOME);
+      String osgiHome = SysPropertyActions.getProperty(OSGI_HOME, null);
       String scandir = scanLocation.getAbsolutePath();
-      if (scandir.startsWith(osgiHome))
+      if (osgiHome != null && scandir.startsWith(osgiHome))
          scandir = "..." + scandir.substring(osgiHome.length());
 
       log.info("Start DeploymentScanner: [scandir=" + scandir + ",interval=" + scanInterval + "ms]");
@@ -163,7 +165,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
    {
       List<Deployment> diff = new ArrayList<Deployment>();
 
-      // Detect OLD bundles that are not in the current scan  
+      // Detect OLD bundles that are not in the current scan
       for (Deployment dep : lastScan)
       {
          if (currScan.contains(dep) == false)
@@ -208,7 +210,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
    {
       List<Deployment> diff = new ArrayList<Deployment>();
 
-      // Detect NEW bundles that are not in the last scan  
+      // Detect NEW bundles that are not in the last scan
       for (Deployment dep : currScan)
       {
          if (lastScan.contains(dep) == false && getBundle(dep) == null)
@@ -287,25 +289,16 @@ public class DeploymentScannerImpl implements DeploymentScannerService
       if (scanLoc == null)
          throw new IllegalStateException("Cannot obtain value for property: '" + PROPERTY_SCAN_LOCATION + "'");
 
-      // Check if the prop is already an URL
-      try
-      {
-         URL scanURL = new URL(scanLoc);
-         scanLocation = new File(scanURL.getPath());
-      }
-      catch (MalformedURLException ex)
-      {
-         // ignore
-      }
+      URL scanURL = toURL(scanLoc);
+      File scanFile = new File(scanURL.getPath());
 
       // Check if the prop is an existing dir
-      File scanFile = new File(scanLoc);
       if (scanFile.exists() == false)
-         throw new IllegalStateException("Scan location does not exist: " + scanLoc);
+         throw new IllegalStateException("Scan location does not exist: " + scanURL);
 
       // Check if the scan location is a directory
       if (scanFile.isDirectory() == false)
-         throw new IllegalStateException("Scan location is not a directory: " + scanLoc);
+         throw new IllegalStateException("Scan location is not a directory: " + scanURL);
 
       scanLocation = scanFile;
    }
@@ -343,15 +336,36 @@ public class DeploymentScannerImpl implements DeploymentScannerService
       }
    }
 
-   private URL toURL(String urlStr)
+   private URL toURL(String path)
    {
+      URL pathURL = null;
+      String realPath = StringPropertyReplacer.replaceProperties(path, context);
       try
       {
-         return new URL(urlStr);
+         pathURL = new URL(realPath);
       }
       catch (MalformedURLException ex)
       {
-         throw new IllegalArgumentException("Invalid URL: " + urlStr);
+         // ignore
       }
+
+      if (pathURL == null)
+      {
+         try
+         {
+            File file = new File(realPath);
+            if (file.exists())
+               pathURL = file.toURI().toURL();
+         }
+         catch (MalformedURLException ex)
+         {
+            throw new IllegalArgumentException("Invalid path: " + realPath, ex);
+         }
+      }
+
+      if (pathURL == null)
+         throw new IllegalArgumentException("Invalid path: " + realPath);
+
+      return pathURL;
    }
 }

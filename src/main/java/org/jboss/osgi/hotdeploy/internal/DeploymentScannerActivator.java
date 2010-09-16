@@ -29,28 +29,27 @@ import org.osgi.framework.BundleContext;
 
 /**
  * The {@link DeploymentScannerService} service activator
- * 
+ *
  * @author thomas.diesler@jboss.com
  * @since 27-May-2009
  */
 public class DeploymentScannerActivator implements BundleActivator
 {
-   private DeploymentScannerImpl service;
-   
+   private DeploymentScannerImpl scannerService;
+
    public void start(BundleContext context)
    {
-      service = new DeploymentScannerImpl(context);
-      context.registerService(DeploymentScannerService.class.getName(), service, null);
-      
-      service.start();
+      scannerService = new DeploymentScannerImpl(context);
+      context.registerService(DeploymentScannerService.class.getName(), scannerService, null);
+      scannerService.start();
    }
 
    public void stop(BundleContext context)
    {
-      if (service != null)
+      if (scannerService != null)
       {
-         service.stop();
-         service = null;
+         scannerService.stop();
+         scannerService = null;
       }
    }
 }
