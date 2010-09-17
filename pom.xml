@@ -38,9 +38,9 @@
   
   <!-- Properties -->
   <properties>
-    <version.jboss.osgi.common>1.0.6-SNAPSHOT</version.jboss.osgi.common>
+    <version.jboss.osgi.common>1.0.6</version.jboss.osgi.common>
     <version.jboss.osgi.deployment>1.0.4</version.jboss.osgi.deployment>
-    <version.jboss.osgi.spi>1.0.14-SNAPSHOT</version.jboss.osgi.spi>
+    <version.jboss.osgi.spi>1.0.14</version.jboss.osgi.spi>
     <version.osgi>4.2.0</version.osgi>
   </properties>
   
