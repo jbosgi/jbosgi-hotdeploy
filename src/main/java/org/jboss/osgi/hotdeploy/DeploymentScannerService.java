@@ -25,8 +25,6 @@ package org.jboss.osgi.hotdeploy;
 
 import java.net.URL;
 
-import org.jboss.osgi.deployment.deployer.Deployment;
-
 
 /**
  * A service that scans a directory location for new/removed bundles.
@@ -75,7 +73,7 @@ public interface DeploymentScannerService
    void scan();
    
    /**
-    * Returns the array of bundles currently known to the deployemtn scanner. 
+    * Returns the array of bundle URLs currently known to the deployment scanner. 
     */
-   Deployment[] getBundleDeployments();
+   URL[] getBundleDeployments();
 }

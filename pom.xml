@@ -38,8 +38,6 @@
   
   <!-- Properties -->
   <properties>
-    <version.jboss.osgi.common>1.0.6</version.jboss.osgi.common>
-    <version.jboss.osgi.deployment>1.0.9-SNAPSHOT</version.jboss.osgi.deployment>
     <version.jboss.osgi.spi>1.0.19-SNAPSHOT</version.jboss.osgi.spi>
     <version.osgi>4.2.0</version.osgi>
   </properties>
@@ -51,26 +49,7 @@
       <artifactId>jbosgi-spi</artifactId>
       <version>${version.jboss.osgi.spi}</version>
     </dependency>
-    <dependency>
-      <groupId>org.jboss.osgi.deployment</groupId>
-      <artifactId>jbosgi-deployment</artifactId>
-      <version>${version.jboss.osgi.deployment}</version>
-    </dependency>
   
-    <!-- Bundle dependencies -->
-    <dependency>
-      <groupId>org.jboss.osgi.common</groupId>
-      <artifactId>jboss-osgi-common</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.jboss.osgi</groupId>
-          <artifactId>jboss-osgi-spi</artifactId>
-        </exclusion>
-      </exclusions>
-      <version>${version.jboss.osgi.common}</version>
-      <scope>provided</scope>
-    </dependency>
-    
     <!-- OSGi Dependencies -->
     <dependency>
       <groupId>org.osgi</groupId>
@@ -103,8 +82,6 @@
             <Import-Package>
                javax.management, 
                org.jboss.logging;version="[3.0,3.1)",
-               org.jboss.osgi.common.log;version="[1.0,1.1)",
-               org.jboss.osgi.deployment.deployer;version="[1.0,1.1)",
                org.jboss.osgi.spi.util;version="[1.0,1.1)",
                org.osgi.framework,
                org.osgi.service.log,

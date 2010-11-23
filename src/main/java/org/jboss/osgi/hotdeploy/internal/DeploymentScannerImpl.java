@@ -21,8 +21,6 @@
  */
 package org.jboss.osgi.hotdeploy.internal;
 
-//$Id$
-
 import static org.jboss.osgi.spi.OSGiConstants.OSGI_HOME;
 
 import java.io.File;
@@ -30,23 +28,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.jboss.logging.Logger;
-import org.jboss.osgi.deployment.deployer.DeployerService;
-import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.deployment.deployer.DeploymentFactory;
 import org.jboss.osgi.hotdeploy.DeploymentScannerService;
-import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.osgi.spi.util.StringPropertyReplacer;
 import org.jboss.osgi.spi.util.SysPropertyActions;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
-import org.osgi.framework.ServiceReference;
-import org.osgi.framework.Version;
 
 /**
  * The DeploymentScanner service
@@ -67,22 +56,12 @@ public class DeploymentScannerImpl implements DeploymentScannerService
    private long beforeStart;
    private long lastChange;
 
-   private DeployerService deployer;
    private ScannerThread scannerThread;
-   private List<Deployment> lastScan = new ArrayList<Deployment>();
-   private Map<String, Deployment> deploymentCache = new HashMap<String, Deployment>();
+   private List<URL> lastScan = new ArrayList<URL>();
 
    public DeploymentScannerImpl(BundleContext context)
    {
       this.context = context;
-
-      // Get the DeployerService
-      ServiceReference sref = context.getServiceReference(DeployerService.class.getName());
-      if (sref == null)
-         throw new IllegalStateException("Cannot obtain deployer service");
-
-      deployer = (DeployerService)context.getService(sref);
-
       initScanner(context);
    }
 
@@ -113,7 +92,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
       if (osgiHome != null && scandir.startsWith(osgiHome))
          scandir = "..." + scandir.substring(osgiHome.length());
 
-      log.info("Start DeploymentScanner: [scandir=" + scandir + ",interval=" + scanInterval + "ms]");
+      log.infof("Start DeploymentScanner: [scandir=%s,interval=%dms]", scandir, scanInterval);
       scannerThread = new ScannerThread(context, this);
       lastChange = System.currentTimeMillis();
       scannerThread.start();
@@ -123,7 +102,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
    {
       if (scannerThread != null)
       {
-         log.info("Stop DeploymentScanner");
+         log.infof("Stop DeploymentScanner");
          scannerThread.stopScan();
          scannerThread = null;
       }
@@ -131,7 +110,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
 
    public void scan()
    {
-      List<Deployment> currScan = Arrays.asList(getBundleDeployments());
+      List<URL> currScan = Arrays.asList(getBundleDeployments());
 
       logBundleDeployments("Current Scan", currScan);
 
@@ -146,133 +125,112 @@ public class DeploymentScannerImpl implements DeploymentScannerService
 
       float diff = (lastChange - beforeStart) / 1000f;
       if (scanCount == 1)
-         log.info("JBossOSGi Runtime started in " + diff + "sec");
+         log.infof("JBossOSGi Runtime started in %dsec", diff);
    }
 
-   private void logBundleDeployments(String message, List<Deployment> bundleDeps)
+   private void logBundleDeployments(String message, List<URL> bundleDeps)
    {
-      if (log.isTraceEnabled())
+      log.tracef(message);
+      for (URL dep : bundleDeps)
       {
-         log.trace(message);
-         for (Deployment dep : bundleDeps)
-         {
-            log.trace("   " + dep);
-         }
+         log.tracef(" %s", dep);
       }
    }
 
-   private int processOldDeployments(List<Deployment> currScan)
+   private int processOldDeployments(List<URL> currScan)
    {
-      List<Deployment> diff = new ArrayList<Deployment>();
+      List<URL> diff = new ArrayList<URL>();
 
       // Detect OLD bundles that are not in the current scan
-      for (Deployment dep : lastScan)
+      for (URL url : lastScan)
       {
-         if (currScan.contains(dep) == false)
-         {
-            Bundle bundle = getBundle(dep);
-            if (bundle == null)
-            {
-               deploymentCache.remove(dep.getLocation());
-            }
-            else
-            {
-               int state = bundle.getState();
-               if (state == Bundle.INSTALLED || state == Bundle.RESOLVED || state == Bundle.ACTIVE)
-               {
-                  deploymentCache.remove(dep.getLocation());
-                  diff.add(dep);
-               }
-            }
-         }
+         if (currScan.contains(url) == false)
+            diff.add(url);
       }
 
       logBundleDeployments("OLD diff", diff);
 
-      // Undeploy the bundles through the DeployerService
-      if (diff.size() > 0)
+      // Undeploy the bundles
+      for (URL url : diff)
       {
-         try
+         Bundle bundle = getBundle(url);
+         if (bundle != null)
          {
-            Deployment[] depArr = diff.toArray(new Deployment[diff.size()]);
-            deployer.undeploy(depArr);
-         }
-         catch (Exception ex)
-         {
-            log.error("Cannot undeploy bundles", ex);
+            try
+            {
+               bundle.uninstall();
+            }
+            catch (Exception ex)
+            {
+               log.errorf(ex, "Cannot undeploy bundle: %s", bundle);
+            }
          }
       }
 
       return diff.size();
    }
 
-   private int processNewDeployments(List<Deployment> currScan)
+   private int processNewDeployments(List<URL> currScan)
    {
-      List<Deployment> diff = new ArrayList<Deployment>();
+      List<URL> diff = new ArrayList<URL>();
 
       // Detect NEW bundles that are not in the last scan
-      for (Deployment dep : currScan)
+      for (URL url : currScan)
       {
-         if (lastScan.contains(dep) == false && getBundle(dep) == null)
-         {
-            diff.add(dep);
-         }
+         if (lastScan.contains(url) == false)
+            diff.add(url);
       }
 
       logBundleDeployments("NEW diff", diff);
 
-      // Deploy the bundles through the DeployerService
-      if (diff.size() > 0)
+      // Install the bundles
+      List<Bundle> bundles = new ArrayList<Bundle>(); 
+      for (URL url : diff)
       {
          try
          {
-            Deployment[] depArr = diff.toArray(new Deployment[diff.size()]);
-            deployer.deploy(depArr);
+            Bundle bundle = context.installBundle(url.toExternalForm());
+            bundles.add(bundle);
          }
          catch (Exception ex)
          {
-            log.error("Cannot deploy bundles", ex);
+            log.errorf(ex, "Cannot deploy bundle: %s", url);
          }
       }
-
+      
+      // Start the bundles
+      for (Bundle bundle : bundles)
+      {
+         try
+         {
+            bundle.start();
+         }
+         catch (Exception ex)
+         {
+            log.errorf(ex, "Cannot start bundle: %s", bundle);
+         }
+      }
       return diff.size();
    }
 
-   public Deployment[] getBundleDeployments()
+   public URL[] getBundleDeployments()
    {
-      List<Deployment> bundles = new ArrayList<Deployment>();
+      List<URL> bundles = new ArrayList<URL>();
 
       File[] listFiles = scanLocation.listFiles();
       if (listFiles == null)
-         log.warn("Cannot list files in: " + scanLocation);
+         log.warnf("Cannot list files in: %s", scanLocation);
 
       if (listFiles != null)
       {
          for (File file : listFiles)
          {
             URL bundleURL = toURL(file);
-            Deployment dep = deploymentCache.get(bundleURL.toExternalForm());
-            if (dep == null)
-            {
-               try
-               {
-                  // hot-deploy bundles are started automatically
-                  BundleInfo info = BundleInfo.createBundleInfo(bundleURL);
-                  dep = DeploymentFactory.createDeployment(info);
-                  dep.setAutoStart(true);
-               }
-               catch (BundleException ex)
-               {
-                  log.error("Cannot create deployment from: " + bundleURL, ex);
-                  continue;
-               }
-               deploymentCache.put(bundleURL.toExternalForm(), dep);
-            }
-            bundles.add(dep);
+            bundles.add(bundleURL);
          }
       }
 
-      Deployment[] arr = new Deployment[bundles.size()];
+      URL[] arr = new URL[bundles.size()];
       return bundles.toArray(arr);
    }
 
@@ -303,22 +261,15 @@ public class DeploymentScannerImpl implements DeploymentScannerService
       scanLocation = scanFile;
    }
 
-   private Bundle getBundle(Deployment dep)
+   private Bundle getBundle(URL url)
    {
-      String symbolicName = dep.getSymbolicName();
-      Version version = Version.parseVersion(dep.getVersion());
-
       Bundle bundle = null;
       for (Bundle aux : context.getBundles())
       {
-         if (aux.getSymbolicName().equals(symbolicName))
+         if (aux.getLocation().equals(url.getFile()))
          {
-            Version auxVersion = aux.getVersion();
-            if (version.equals(auxVersion))
-            {
-               bundle = aux;
-               break;
-            }
+            bundle = aux;
+            break;
          }
       }
       return bundle;
@@ -328,7 +279,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
    {
       try
       {
-         return file.toURI().toURL();
+         return file.getAbsoluteFile().toURI().toURL();
       }
       catch (MalformedURLException ex)
       {

@@ -23,10 +23,9 @@ package org.jboss.osgi.hotdeploy.internal;
 
 //$Id$
 
-import org.jboss.osgi.common.log.LogServiceTracker;
+import org.jboss.logging.Logger;
 import org.jboss.osgi.hotdeploy.DeploymentScannerService;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.log.LogService;
 
 /**
  * A simple scanner thread
@@ -36,14 +35,13 @@ import org.osgi.service.log.LogService;
  */
 public class ScannerThread extends Thread
 {
-   private LogService log;
+   private static Logger log = Logger.getLogger(ScannerThread.class);
    
    private DeploymentScannerService scanner;
    private boolean active = true;
 
    public ScannerThread(BundleContext context, DeploymentScannerService scanner)
    {
-      this.log = new LogServiceTracker(context);
       this.scanner = scanner;
    }
 
@@ -60,7 +58,7 @@ public class ScannerThread extends Thread
             }
             catch (RuntimeException ex)
             {
-               log.log(LogService.LOG_ERROR, "Deployment error", ex);
+               log.errorf(ex, "Deployment error");
             }
             
             // Sleep for the duration of the configured interval 
