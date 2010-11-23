@@ -36,6 +36,8 @@ import org.jboss.osgi.spi.util.StringPropertyReplacer;
 import org.jboss.osgi.spi.util.SysPropertyActions;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
  * The DeploymentScanner service
@@ -49,6 +51,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
    private static final Logger log = Logger.getLogger(DeploymentScannerImpl.class);
 
    private BundleContext context;
+   private PackageAdmin packageAdmin;
 
    private long scanInterval;
    private File scanLocation;
@@ -151,22 +154,24 @@ public class DeploymentScannerImpl implements DeploymentScannerService
       logBundleDeployments("OLD diff", diff);
 
       // Undeploy the bundles
-      for (URL url : diff)
+      if (diff.size() > 0)
       {
-         Bundle bundle = getBundle(url);
-         if (bundle != null)
+         for (URL url : diff)
          {
-            try
+            Bundle bundle = getBundle(url);
+            if (bundle != null)
             {
-               bundle.uninstall();
-            }
-            catch (Exception ex)
-            {
-               log.errorf(ex, "Cannot undeploy bundle: %s", bundle);
+               try
+               {
+                  bundle.uninstall();
+               }
+               catch (Exception ex)
+               {
+                  log.errorf(ex, "Cannot undeploy bundle: %s", bundle);
+               }
             }
          }
       }
-
       return diff.size();
    }
 
@@ -183,31 +188,36 @@ public class DeploymentScannerImpl implements DeploymentScannerService
 
       logBundleDeployments("NEW diff", diff);
 
-      // Install the bundles
-      List<Bundle> bundles = new ArrayList<Bundle>(); 
-      for (URL url : diff)
+      if (diff.size() > 0)
       {
-         try
+         // Install the bundles
+         List<Bundle> bundles = new ArrayList<Bundle>();
+         for (URL url : diff)
          {
-            Bundle bundle = context.installBundle(url.toExternalForm());
-            bundles.add(bundle);
+            try
+            {
+               Bundle bundle = context.installBundle(url.toExternalForm());
+               bundles.add(bundle);
+            }
+            catch (Exception ex)
+            {
+               log.errorf(ex, "Cannot deploy bundle: %s", url);
+            }
          }
-         catch (Exception ex)
+
+         // Start the bundles
+         for (Bundle bundle : bundles)
          {
-            log.errorf(ex, "Cannot deploy bundle: %s", url);
-         }
-      }
-      
-      // Start the bundles
-      for (Bundle bundle : bundles)
-      {
-         try
-         {
-            bundle.start();
-         }
-         catch (Exception ex)
-         {
-            log.errorf(ex, "Cannot start bundle: %s", bundle);
+            try
+            {
+               int bundleType = packageAdmin.getBundleType(bundle);
+               if (bundleType != PackageAdmin.BUNDLE_TYPE_FRAGMENT)
+                  bundle.start();
+            }
+            catch (Exception ex)
+            {
+               log.errorf(ex, "Cannot start bundle: %s", bundle);
+            }
          }
       }
       return diff.size();
@@ -259,6 +269,9 @@ public class DeploymentScannerImpl implements DeploymentScannerService
          throw new IllegalStateException("Scan location is not a directory: " + scanURL);
 
       scanLocation = scanFile;
+
+      ServiceReference sref = context.getServiceReference(PackageAdmin.class.getName());
+      packageAdmin = (PackageAdmin)context.getService(sref);
    }
 
    private Bundle getBundle(URL url)
