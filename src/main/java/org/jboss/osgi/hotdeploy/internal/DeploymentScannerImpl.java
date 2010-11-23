@@ -264,12 +264,18 @@ public class DeploymentScannerImpl implements DeploymentScannerService
    private Bundle getBundle(URL url)
    {
       Bundle bundle = null;
+      String urlPath = url.getFile();
       for (Bundle aux : context.getBundles())
       {
-         if (aux.getLocation().equals(url.getFile()))
+         if (aux.getBundleId() != 0)
          {
-            bundle = aux;
-            break;
+            String location = aux.getLocation();
+            String locationPath = toURL(location).getFile();
+            if (urlPath.equals(locationPath))
+            {
+               bundle = aux;
+               break;
+            }
          }
       }
       return bundle;
