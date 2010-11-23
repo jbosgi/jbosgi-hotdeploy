@@ -125,7 +125,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
 
       float diff = (lastChange - beforeStart) / 1000f;
       if (scanCount == 1)
-         log.infof("JBossOSGi Runtime started in %dsec", diff);
+         log.infof("JBossOSGi Runtime started in %fsec", diff);
    }
 
    private void logBundleDeployments(String message, List<URL> bundleDeps)
