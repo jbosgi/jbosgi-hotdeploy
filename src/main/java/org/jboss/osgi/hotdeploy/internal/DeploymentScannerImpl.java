@@ -33,7 +33,6 @@ import java.util.List;
 import org.jboss.logging.Logger;
 import org.jboss.osgi.hotdeploy.DeploymentScannerService;
 import org.jboss.osgi.spi.util.StringPropertyReplacer;
-import org.jboss.osgi.spi.util.SysPropertyActions;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -90,7 +89,7 @@ public class DeploymentScannerImpl implements DeploymentScannerService
 
    public void start()
    {
-      String osgiHome = SysPropertyActions.getProperty(OSGI_HOME, null);
+      String osgiHome = SecurityActions.getSystemProperty(OSGI_HOME, null);
       String scandir = scanLocation.getAbsolutePath();
       if (osgiHome != null && scandir.startsWith(osgiHome))
          scandir = "..." + scandir.substring(osgiHome.length());
